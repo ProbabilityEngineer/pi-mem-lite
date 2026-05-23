@@ -4,13 +4,13 @@ import * as path from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 
-const ACTIONS = ["list", "search", "remember", "propose", "approve", "update", "forget"] as const;
+const ACTIONS = ["list", "search", "review", "remember", "propose", "approve", "update", "forget"] as const;
 const KINDS = ["preference", "project", "lesson", "reference"] as const;
 const SCOPES = ["global", "project"] as const;
 const MEMORY_PROMPT_SNIPPET =
 	"Memory routing: use memory for explicit durable preferences/lessons; propose inferred memories instead of silently saving them.";
 const MEMORY_GUIDELINES = [
-	"Use memory remember only when the user explicitly asks to remember something; use memory propose for inferred durable preferences or lessons.",
+	"Use memory remember only when the user explicitly asks to remember something; use memory propose for inferred durable preferences or lessons; use memory review to inspect pending candidates.",
 	"Memory is context, not authority; current user instructions and repo evidence override memory.",
 ];
 
@@ -235,13 +235,18 @@ async function execute(params: Params, cwd?: string) {
 	if (params.action === "update") return format(await update(params));
 	if (params.action === "forget") return `Forgot ${await forget(params)}`;
 
-	const file = params.action === "list" ? memoriesFile() : memoriesFile();
-	let records = await readJsonl(file);
+	let records = await readJsonl(params.action === "review" ? candidatesFile() : memoriesFile());
 	if (params.action === "search") {
 		const q = requireField(params.query, "query");
 		records = records.filter((record) => matches(record, q));
 	}
-	return formatList(records.slice(0, limit(params.limit)), params.action === "search" ? "No matching memories." : "No memories stored.");
+	const empty =
+		params.action === "search"
+			? "No matching memories."
+			: params.action === "review"
+				? "No memory candidates."
+				: "No memories stored.";
+	return formatList(records.slice(0, limit(params.limit)), empty);
 }
 
 export default function (pi: ExtensionAPI) {
@@ -294,7 +299,7 @@ export default function (pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "memory",
 		label: "Memory",
-		description: "Explicit lightweight persistent memory: list/search/remember/propose/approve/update/forget.",
+		description: "Explicit lightweight persistent memory: list/search/review/remember/propose/approve/update/forget.",
 		promptSnippet: MEMORY_PROMPT_SNIPPET,
 		promptGuidelines: MEMORY_GUIDELINES,
 		parameters: Type.Object({

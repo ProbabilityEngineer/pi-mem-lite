@@ -63,6 +63,7 @@ Actions:
 
 - `list`
 - `search`
+- `review`
 - `remember`
 - `propose`
 - `approve`
