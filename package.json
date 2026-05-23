@@ -1,0 +1,27 @@
+{
+  "name": "pi-mem-lite",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Explicit lightweight persistent memory for Pi agents",
+  "main": "index.ts",
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "build": "tsc --project tsconfig.json"
+  },
+  "keywords": ["pi", "pi-extension", "memory", "persistent-memory"],
+  "license": "MIT",
+  "files": ["index.ts", "README.md", "DESIGN.md", "tsconfig.json"],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "dependencies": {
+    "typebox": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
+  },
+  "pi": {
+    "extensions": ["./index.ts"]
+  }
+}
