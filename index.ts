@@ -138,11 +138,23 @@ function formatList(records: MemoryRecord[], empty: string) {
 	return records.length ? records.map(format).join("\n\n---\n") : empty;
 }
 
+function searchTerms(query: string) {
+	return query
+		.toLowerCase()
+		.split(/[^a-z0-9_-]+/)
+		.map((term) => term.trim())
+		.filter(Boolean)
+		.map((term) => (term.length >= 5 ? term.slice(0, 5) : term));
+}
+
 function matches(record: MemoryRecord, q: string) {
 	const haystack = [record.id, record.kind, record.scope, record.text, record.evidence ?? "", record.tags.join(" ")]
 		.join("\n")
 		.toLowerCase();
-	return haystack.includes(q.toLowerCase());
+	const exact = q.trim().toLowerCase();
+	if (exact && haystack.includes(exact)) return true;
+	const terms = searchTerms(q);
+	return terms.length > 0 && terms.every((term) => haystack.includes(term));
 }
 
 function merge(record: MemoryRecord, params: Params) {
